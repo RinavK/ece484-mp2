@@ -61,7 +61,7 @@ class vehicleController():
     def longititudal_controller(self, curr_x, curr_y, curr_vel, curr_yaw, future_unreached_waypoints):
 
         ####################### TODO: Your TASK 2 code starts Here #######################
-        target_velocity = 13
+        target_velocity = 16
         if len(future_unreached_waypoints) >= 2:
             tar_x, tar_y = future_unreached_waypoints[1]
         else:
