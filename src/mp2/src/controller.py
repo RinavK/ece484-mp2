@@ -62,17 +62,19 @@ class vehicleController():
 
         ####################### TODO: Your TASK 2 code starts Here #######################
         target_velocity = 13
-        if future_unreached_waypoints:
-            tar_x, tar_y = future_unreached_waypoints[0]
-            distx = tar_x-curr_x
-            disty = tar_y-curr_y
-            tar_theta = math.atan2(disty, distx)
-            theta_error = tar_theta - curr_yaw
-            # print("CURRENT YAW OF: ", curr_yaw)
-            # print("TARGETED ANGLE OF: ", tar_theta)
-            print("CURRENT ERROR OF:", abs(theta_error)*(180/np.pi))
-            if abs(theta_error) > 5*(np.pi/180):
-                target_velocity = 8
+        if len(future_unreached_waypoints) >= 2:
+            tar_x, tar_y = future_unreached_waypoints[1]
+        else:
+            tar_x, tar_y = future_unreached_waypoints[-1]
+        distx = tar_x-curr_x
+        disty = tar_y-curr_y
+        tar_theta = math.atan2(disty, distx)
+        theta_error = tar_theta - curr_yaw
+        # print("CURRENT YAW OF: ", curr_yaw, " TARGETED ANGLE OF: ", tar_theta)
+        # print("CURRENT ERROR OF:", abs(theta_error)*(180/np.pi))
+        if abs(theta_error) > 10*(np.pi/180):
+            target_velocity = 8
+        print("TARGET VELOCITY OF: ", target_velocity)
 
         ####################### TODO: Your TASK 2 code ends Here #######################
         return target_velocity
@@ -83,21 +85,28 @@ class vehicleController():
 
         ####################### TODO: Your TASK 3 code starts Here #######################
         target_steering = 0
-        lookahead_dist = 1 #i am testing it with 10, can tune later (this is the second approach from the doc)
-        lookahead_point = None
-        # for i in future_unreached_waypoints:
-        #     dist_x = i[0] - curr_x
-        #     dist_y = i[1] - curr_y
-        #     tot_dist = math.hypot(dist_x, dist_y)
-        #     print("distance to next waypoint is: ", tot_dist)
-        #     if tot_dist > lookahead_dist:
-        #         lookahead_point = i
-        #         break
-        if lookahead_point is None:
-            lookahead_point = target_point
+        # lookahead_dist = 5 #i am testing it with 10, can tune later (this is the second approach from the doc)
+        # lookahead_point = None
+        # i = future_unreached_waypoints[0]
+        # dist_x = i[0] - curr_x
+        # dist_y = i[1] - curr_y
+        # tot_dist = math.hypot(dist_x, dist_y)
+        # print("distance to next waypoint is: ", tot_dist)
+        # if tot_dist < lookahead_dist:
+        #     lookahead_point = i
+        # if lookahead_point is None:
+        #     lookahead_point = target_point
+        tar_x = 0
+        tar_y = 0
+
+        if len(future_unreached_waypoints) >= 2:
+            tar_x, tar_y = future_unreached_waypoints[1]
+        else:
+            tar_x, tar_y = future_unreached_waypoints[-1]
+
         
-        dist_x = lookahead_point[0] - curr_x
-        dist_y = lookahead_point[1] - curr_y
+        dist_x = tar_x - curr_x
+        dist_y = tar_y - curr_y
 
         ld = math.hypot(dist_x, dist_y)
         
@@ -105,12 +114,14 @@ class vehicleController():
 
         #print(f"dist_x: {dist_x}, dist_y: {dist_y}, ld: {ld}")
         tar_theta = math.atan2(dist_y, dist_x)
-        # alpha = tar_theta - curr_yaw #normalize?
-        alpha = tar_theta - curr_yaw#(tar_theta - curr_yaw + np.pi) % (2*np.pi) - np.pi #prolly not needed
-        
+        alpha = tar_theta - curr_yaw #normalize?
+        #alpha = (tar_theta - curr_yaw + np.pi) % (2*np.pi) - np.pi #prolly not needed      
 
         target_steering = math.atan((2*self.L *math.sin(alpha))/ld)
-        print("TARGET STEERING IS ", target_steering, " ANGLE TO POINT IS ", alpha)
+
+        print("L param: ", self.L, "ld param: ", ld)
+        print("TARGETED ANGLE OF: ", tar_theta, "CURRENT YAW OF: ", curr_yaw)
+        print("TARGET STEERING IS ", target_steering, " ERROR TO POINT IS ", alpha)
         #print(f"tar_theta: {tar_theta}, curr_yaw: {curr_yaw}, alpha: {alpha}, tar_steer: {target_steering}")
 
         ####################### TODO: Your TASK 3 code starts Here #######################
