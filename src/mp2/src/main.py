@@ -8,6 +8,8 @@ import time
 from waypoint_list import WayPoints
 from util import euler_to_quaternion, quaternion_to_euler
 
+import matplotlib.pyplot as plt
+
 def run_model():
     rospy.init_node("model_dynamics")
     controller = vehicleController()
@@ -15,6 +17,9 @@ def run_model():
     waypoints = WayPoints()
     pos_list = waypoints.getWayPoints()
     pos_idx = 1
+
+    x_loc = []
+    y_loc = []
 
     target_x, target_y = pos_list[pos_idx]
 
@@ -43,6 +48,9 @@ def run_model():
         distToTargetX = abs(target_x - currState.pose.position.x)
         distToTargetY = abs(target_y - currState.pose.position.y)
 
+        x_loc.append(currState.pose.position.x)
+        y_loc.append(currState.pose.position.y)
+
         cur_time = rospy.Time.now()
         if (cur_time - prev_wp_time).to_sec() > 4:
             print(f"failure to reach {pos_idx}-th waypoint in time")
@@ -57,6 +65,15 @@ def run_model():
                 print("Reached all the waypoints")
                 total_time = (cur_time - start_time).to_sec()
                 print(total_time)
+                plt.plot(x_loc, y_loc, color="black")
+                waypoints_x, waypoints_y = zip(*pos_list)
+                plt.scatter(waypoints_x, waypoints_y, color="cyan", marker="x")
+                plt.scatter([0], [-98], color="magenta", marker="x")
+                plt.show()
+                plt.clf()
+                accel, time = controller.getAccelData()
+                plt.plot(time, accel)
+                plt.show()
                 return True, pos_idx, total_time
 
             target_x, target_y = pos_list[pos_idx]
@@ -70,5 +87,6 @@ def run_model():
 if __name__ == "__main__":
     try:
         status, num_waypoints, time_taken = run_model()
+
     except rospy.exceptions.ROSInterruptException:
         rospy.loginfo("Shutting down")

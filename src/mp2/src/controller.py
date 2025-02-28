@@ -16,6 +16,9 @@ class vehicleController():
         self.prev_vel = 0
         self.L = 1.75 # Wheelbase, can be get from gem_control.py
         self.log_acceleration = False
+        self.accelData = []
+        self.time = 0
+        self.timeData = []
 
     def getModelState(self):
         # Get the current state of the vehicle
@@ -74,7 +77,7 @@ class vehicleController():
         # print("CURRENT ERROR OF:", abs(theta_error)*(180/np.pi))
         if abs(theta_error) > 10*(np.pi/180):
             target_velocity = 8
-        print("TARGET VELOCITY OF: ", target_velocity)
+        # print("TARGET VELOCITY OF: ", target_velocity)
 
         ####################### TODO: Your TASK 2 code ends Here #######################
         return target_velocity
@@ -119,9 +122,9 @@ class vehicleController():
 
         target_steering = math.atan((2*self.L *math.sin(alpha))/ld)
 
-        print("L param: ", self.L, "ld param: ", ld)
-        print("TARGETED ANGLE OF: ", tar_theta, "CURRENT YAW OF: ", curr_yaw)
-        print("TARGET STEERING IS ", target_steering, " ERROR TO POINT IS ", alpha)
+        # print("L param: ", self.L, "ld param: ", ld)
+        # print("TARGETED ANGLE OF: ", tar_theta, "CURRENT YAW OF: ", curr_yaw)
+        # print("TARGET STEERING IS ", target_steering, " ERROR TO POINT IS ", alpha)
         #print(f"tar_theta: {tar_theta}, curr_yaw: {curr_yaw}, alpha: {alpha}, tar_steer: {target_steering}")
 
         ####################### TODO: Your TASK 3 code starts Here #######################
@@ -142,8 +145,11 @@ class vehicleController():
         # Acceleration Profile
         if self.log_acceleration:
             acceleration = (curr_vel- self.prev_vel) * 100 # Since we are running in 100Hz
-
-
+            self.accelData.append(acceleration)
+            self.time = self.time + 0.01
+            self.timeData.append(self.time)
+            
+            # print(acceleration/1000)
 
         target_velocity = self.longititudal_controller(curr_x, curr_y, curr_vel, curr_yaw, future_unreached_waypoints)
         target_steering = self.pure_pursuit_lateral_controller(curr_x, curr_y, curr_yaw, target_point, future_unreached_waypoints)
@@ -161,3 +167,6 @@ class vehicleController():
         newAckermannCmd = AckermannDrive()
         newAckermannCmd.speed = 0
         self.controlPub.publish(newAckermannCmd)
+
+    def getAccelData(self):
+        return self.accelData, self.timeData
